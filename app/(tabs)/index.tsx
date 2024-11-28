@@ -1,74 +1,126 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { useRouter } from 'expo-router';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const { width, height } = Dimensions.get('window');
 
-export default function HomeScreen() {
+export default function SplashScreen() {
+  const router = useRouter();
+  const handleRegister = () => {
+    router.push('/register'); // Navigate to the register page
+  };
+  const handleSignIn = () => {
+    router.push('/signin'); // Navigate to the sign-in page
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
+    <View style={styles.container}>
+      <View style={styles.header}>
         <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+          source={require('@/assets/images/background.png')}
+          style={styles.background}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      </View>
+
+      <View style={styles.header}>
+        <Image
+          source={require('@/assets/images/logo.png')}
+          style={styles.logo}
+        />
+        <Text style={styles.headerTitle}>FeelTok</Text>
+      </View>
+
+      <View style={styles.whiteSection}>
+        <Text style={styles.title}>Let’s get started</Text>
+        <Text style={styles.subtitle}>Welcome to a World of Positivity!</Text>
+
+        <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
+          <Text style={styles.signInText}>Sign in</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
+          <Text style={styles.registerText}>Register</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    backgroundColor: '#EDC45A',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'flex-start',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  header: {
+    alignItems: 'center',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  background: {
+    width: '100%',
+    height: height * 0.50, 
+    position: 'absolute', 
+    top: 0,
+  },
+  logo: {
+    width: width * 0.35, 
+    height: width * 0.35, 
+    resizeMode: 'contain',
+    marginTop: 350, 
+  },
+  headerTitle: {
+    fontSize: 100, 
+    fontWeight: 'bold',
+    color: '#000',
+    marginTop: -50, 
+  },
+  whiteSection: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    marginTop: 100, 
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    fontWeight: '400',
+    color: '#555',
+    marginBottom: 30,
+    textAlign: 'center',
+  },
+  signInButton: {
+    backgroundColor: '#60C5A8',
+    paddingVertical: 14,
+    borderRadius: 25,
+    width: width * 0.75,
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  signInText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  registerButton: {
+    borderWidth: 2,
+    borderColor: '#000',
+    paddingVertical: 14,
+    borderRadius: 25,
+    width: width * 0.75,
+    alignItems: 'center',
+  },
+  registerText: {
+    color: '#000',
+    fontSize: 18,
+    fontWeight: '600',
   },
 });

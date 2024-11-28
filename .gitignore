@@ -36,3 +36,28 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# Node.js dependencies
+/node_modules/
+
+# Expo (if you're using Expo)
+.expo/
+
+# React Native build folders
+/android/build/
+/ios/build/
+
+# Environment files
+.env
+
+# Debug log
+npm-debug.log
+
+# MacOS system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
+
+
+

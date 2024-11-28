@@ -27,12 +27,29 @@ export default function TabLayout() {
         }),
       }}>
       <Tabs.Screen
-        name="index"
-        options={{
+          name="index"
+          options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarStyle: { display: 'none' }, // Dynamically hides the tab bar
         }}
-      />
+      />  
+      <Tabs.Screen
+          name="register"
+          options={{
+          title: 'Register',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarStyle: { display: 'none' }, // Dynamically hides the tab bar
+        }}
+      />  
+      <Tabs.Screen
+          name="signin"
+          options={{
+          title: 'Sign-In',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarStyle: { display: 'none' }, // Dynamically hides the tab bar
+        }}
+      /> 
       <Tabs.Screen
         name="explore"
         options={{
