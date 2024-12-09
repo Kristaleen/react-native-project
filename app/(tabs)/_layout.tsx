@@ -1,62 +1,50 @@
+import React, { useState, useEffect } from 'react';
 import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
-
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
+import { usePathname } from 'expo-router';
+import BottomBar from '../components/bottomBar';
+import TopBar from '../components/topBar';  
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const currentRoute = usePathname();
+  const [showBottomBar, setShowBottomBar] = useState(true);
+  const [showTopBar, setShowTopBar] = useState(true);
+
+  // Define the routes where you don't want to show the top or bottom bar
+  const excludedRoutes = ['/', '/index', '/auth/register', '/auth/signin'];
+
+  useEffect(() => {
+    // Update BottomBar and TopBar visibility based on current route
+    if (excludedRoutes.includes(currentRoute)) {
+      setShowBottomBar(false);
+      setShowTopBar(false);
+    } else {
+      setShowBottomBar(true);
+      setShowTopBar(true);
+    }
+  }, [currentRoute]);
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
-          name="index"
-          options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-          tabBarStyle: { display: 'none' }, // Dynamically hides the tab bar
-        }}
-      />  
-      <Tabs.Screen
-          name="register"
-          options={{
-          title: 'Register',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-          tabBarStyle: { display: 'none' }, // Dynamically hides the tab bar
-        }}
-      />  
-      <Tabs.Screen
-          name="signin"
-          options={{
-          title: 'Sign-In',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-          tabBarStyle: { display: 'none' }, // Dynamically hides the tab bar
-        }}
-      /> 
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
+    <>
+      {/* Conditionally Render TopBar */}
+      {showTopBar && <TopBar />}
+
+      <Tabs
+        screenOptions={({ route }) => ({
+          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+          headerShown: excludedRoutes.includes(route.path), 
+          tabBarStyle: excludedRoutes.includes(currentRoute)
+            ? { display: 'none' }
+            : {},
+        })}
+      >
+        {/* Define your Tab Screens here */}
+      </Tabs>
+
+      {/* Conditionally Render BottomBar */}
+      {showBottomBar && <BottomBar />}
+    </>
   );
 }
