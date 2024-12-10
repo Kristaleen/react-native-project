@@ -64,7 +64,7 @@ export default function SignInScreen() {
       if (userDetails.labels?.includes('admin')) {
         router.push('/admin/AdminPage');
       } else {
-        router.push('/(tabs)/Home');
+        router.push('/Home');
       }
     } catch (error) {
     
@@ -175,7 +175,7 @@ export default function SignInScreen() {
                 <Text style={styles.guestSignInText}>Sign in as Guest</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => router.push('/auth/register')}>
+              <TouchableOpacity onPress={() => router.push('/register')}>
                 <Text style={styles.signUpText}>
                   Don’t have an account? <Text style={styles.signUpLink}>Sign Up</Text>
                 </Text>

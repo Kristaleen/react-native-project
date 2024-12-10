@@ -8,11 +8,11 @@ export default function SplashScreen() {
   const router = useRouter();
 
   const handleRegister = () => {
-    router.push('/auth/register'); // Navigate to the register page
+    router.push('/register'); // Navigate to the register page
   };
   
   const handleSignIn = () => {
-    router.push('/auth/signin'); // Navigate to the sign-in page
+    router.push('/signin'); // Navigate to the sign-in page
   };
 
   return (

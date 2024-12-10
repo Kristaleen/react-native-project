@@ -1,5 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, StyleSheet, Dimensions, Image, StatusBar } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
+  StyleSheet,
+  Dimensions,
+  Image,
+} from 'react-native';
 import { Client, Account } from 'react-native-appwrite';
 import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -25,19 +39,27 @@ export default function RegisterScreen() {
   const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
 
+  // Configure Google OAuth
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId: '145158790263-dkj90d81ak639g6aqv19nk38v1b9831k.apps.googleusercontent.com', 
+    clientId: '145158790263-glucgp5c60mham66h05cimhqfd4le3li.apps.googleusercontent.com',
+    redirectUri: '145158790263-glucgp5c60mham66h05cimhqfd4le3li.apps.googleusercontent.com', 
   });
-
-
 
   const validateForm = () => {
     if (!username || !email || !password || !confirmPassword) {
-      setErrorMessage('All fields are required');
+      setErrorMessage('Please fill out all fields.');
+      return false;
+    }
+    if (!email.includes('@')) {
+      setErrorMessage('Enter a valid email address.');
+      return false;
+    }
+    if (password.length < 6) {
+      setErrorMessage('Password must be at least 6 characters.');
       return false;
     }
     if (password !== confirmPassword) {
-      setErrorMessage('Passwords do not match');
+      setErrorMessage('Passwords do not match.');
       return false;
     }
     return true;
@@ -53,34 +75,48 @@ export default function RegisterScreen() {
         setEmail('');
         setPassword('');
         setConfirmPassword('');
-        router.push('/auth/signin');
+        router.push('/signin');
       } catch (error) {
-        
-        setErrorMessage(error.message || 'An error occurred. Please try again.');
+        setErrorMessage(error.message || 'An error occurred during registration.');
       }
     } else {
       Alert.alert('Error', errorMessage);
     }
   };
 
-  const handleGoogleSignIn = async (idToken) => {
-    try {
-      // Create OAuth2 session with Google token
-      await account.createOAuth2Session('google', idToken, 'https://cloud.appwrite.io/v1/account/sessions/oauth2/callback/google/674b11a0000e39b3d48f'); 
-      
-      router.push('/auth/signin');
-    } catch (error) {
-      
-      Alert.alert('Error', error.message || 'An error occurred during Google Sign-In.');
+  const handleGoogleSignIn = async () => {
+    if (!request) {
+      Alert.alert('Google Sign-In Error', 'Google Sign-In is not initialized.');
+      return;
+    }
+
+    const result = await promptAsync();
+    if (result.type === 'success') {
+      try {
+        const idToken = result.params.id_token;
+        await account.createOAuth2Session(
+          'google',
+          'myapp://auth',
+          'myapp://auth/fail'
+        );
+        router.push('/signin');
+      } catch (error) {
+        Alert.alert('Google Sign-In Error', error.message || 'Unable to authenticate.');
+      }
+    } else if (result.type === 'cancel') {
+      Alert.alert('Sign-In Canceled', 'Google Sign-In was canceled.');
     }
   };
 
   const navigateToSignIn = () => {
-    router.push('/auth/signin');
+    router.push('/signin');
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.header}>
@@ -88,10 +124,34 @@ export default function RegisterScreen() {
           </View>
           <View style={styles.whiteSection}>
             <Text style={styles.title}>Get started</Text>
-            <TextInput style={styles.input} placeholder="Enter Username" value={username} onChangeText={setUsername} />
-            <TextInput style={styles.input} placeholder="Enter Email" value={email} onChangeText={setEmail} />
-            <TextInput style={styles.input} placeholder="New Password" value={password} onChangeText={setPassword} secureTextEntry />
-            <TextInput style={styles.input} placeholder="Confirm Password" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Username"
+              value={username}
+              onChangeText={setUsername}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="New Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+            />
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
             <TouchableOpacity style={styles.signUpButton} onPress={handleSubmit}>
               <Text style={styles.signUpText}>Sign Up</Text>
@@ -103,8 +163,8 @@ export default function RegisterScreen() {
             </View>
             <View style={styles.socialSignInContainer}>
               <TouchableOpacity
-                style={[styles.socialButton, { backgroundColor: '#DB4437' }] }
-                onPress={() => promptAsync()}
+                style={[styles.socialButton, { backgroundColor: '#DB4437' }]}
+                onPress={handleGoogleSignIn}
               >
                 <FontAwesome name="google" size={20} color="#FFF" />
               </TouchableOpacity>
@@ -120,6 +180,7 @@ export default function RegisterScreen() {
     </KeyboardAvoidingView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

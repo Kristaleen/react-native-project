@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, FlatList, Alert } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Client, Account, Databases } from 'react-native-appwrite';
 
@@ -17,6 +16,7 @@ interface Post {
   name: string; // User's name
   post: string; // Post content
   image: string | null; // Post image URL or null
+  feeling: string; // User's feeling (Happy, Sad, Excited, etc.)
 }
 
 export default function HomePage() {
@@ -38,11 +38,12 @@ export default function HomePage() {
         name: doc.userName || 'Anonymous',
         post: doc.text,
         image: doc.image || null,
+        feeling: doc.feeling || 'Nothing', // Add feeling data
       }));
 
       setPosts(postList); // Set the state with the fetched posts
     } catch (error) {
-      
+      console.error(error);
     }
   };
 
@@ -58,17 +59,6 @@ export default function HomePage() {
     return () => clearInterval(intervalId);
   }, []);
 
-  // Logout Handler
-  const handleLogout = async () => {
-    try {
-      await account.deleteSession('current'); // Log out the current session
-      router.push('/'); // Redirect to the login (or splash) page
-    } catch (error) {
-
-      Alert.alert('Error', 'Failed to log out. Please try again.');
-    }
-  };
-
   // Handle emoji reaction
   const handleReaction = (postId: string, emoji: string) => {
     setReactions((prevReactions) => ({
@@ -80,10 +70,13 @@ export default function HomePage() {
   // Render each post
   const renderPost = ({ item }: { item: Post }) => (
     <View style={styles.postContainer}>
+      {/* Feeling box */}
+      <View style={styles.feelingBox}>
+        <Text style={styles.feelingText}>Feeling: {item.feeling}</Text>
+      </View>
       <View style={styles.header}>
         <Image source={require('@/assets/images/profile.jpg')} style={styles.profilePic} />
         <Text style={styles.name}>{item.name}</Text>
-        <FontAwesome name="share-alt" size={18} color="#333" />
       </View>
       <Text style={styles.postText}>{item.post}</Text>
       {item.image && (
@@ -114,11 +107,6 @@ export default function HomePage() {
         renderItem={renderPost}
         keyExtractor={(item) => item.id}
       />
-      {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <FontAwesome name="sign-out" size={25} color="#fff" />
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -126,21 +114,40 @@ export default function HomePage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#f4f7fc', // Light grayish-blue background
+    paddingTop: 10,
   },
   postContainer: {
-    backgroundColor: '#FFE5B0',
-    margin: 15,
-    padding: 15,
-    borderRadius: 15,
+    backgroundColor: '#FAE1C4', // White background for posts
+    marginHorizontal: 15,
+    marginBottom: 15,
+    padding: 20,
+    borderRadius: 20,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  feelingBox: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#FFCCBC', 
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+    zIndex: 1,
+  },
+  feelingText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#D32F2F', 
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    marginBottom: 10,
   },
   profilePic: {
     width: 40,
@@ -151,53 +158,43 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
     marginLeft: 10,
+    color: '#333',
   },
   postText: {
-    marginTop: 10,
-    fontSize: 14,
-    color: '#333',
+    fontSize: 15,
+    color: '#444',
+    lineHeight: 22,
   },
   postImage: {
     width: '100%',
     height: 200,
-    marginTop: 10,
-    borderRadius: 10,
+    marginTop: 15,
+    borderRadius: 15,
   },
   emojisContainer: {
-    marginTop: 10,
+    marginTop: 15,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '60%',
+    justifyContent: 'space-around',
+    width: '70%',
   },
   emojiButton: {
-    padding: 20,
+    padding: 15,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
   },
   emojiText: {
-    fontSize: 24,
-  },
-  logoutButton: {
-    position: 'absolute',
-    bottom: 90,
-    left: 30,
-    backgroundColor: '#ED802A',
-    borderRadius: 25,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoutText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 10,
+    fontSize: 28,
   },
   reactionText: {
     marginTop: 10,
-    fontSize: 15,
-    color: '#333',
+    fontSize: 14,
+    color: '#555',
+    fontStyle: 'italic',
   },
 });

@@ -40,7 +40,7 @@ export default function BottomBar() {
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
+    position: 'relative',
     bottom: 0,
     left: 0,
     right: 0,

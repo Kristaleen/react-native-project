@@ -1,118 +1,120 @@
 import React, { useState, useEffect } from 'react';
-import { View, Dimensions, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Image, ActivityIndicator, Alert, Platform, ScrollView } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Image, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { databases } from '../config/appwriteConfig';
-import * as FileSystem from 'expo-file-system';
-import { Client, Account, Storage, ID } from 'appwrite';
+import { Client, Storage, Databases, ID, Account } from 'appwrite';
 
-// Initialize Appwrite client
+// Appwrite Client setup
 const client = new Client();
-client.setEndpoint('https://cloud.appwrite.io/v1').setProject('674b11a0000e39b3d48f');
+client
+  .setEndpoint('https://cloud.appwrite.io/v1') // API Endpoint
+  .setProject('674b11a0000e39b3d48f'); // Project ID
 
-const account = new Account(client);
 const storage = new Storage(client);
+const databases = new Databases(client);
+const account = new Account(client);
 
 export default function CreatePost() {
-  const [text, setText] = useState('');
-  const [selectedFeeling, setSelectedFeeling] = useState('Nothing');
-  const [imageUri, setImageUri] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [userName, setUserName] = useState(null);
+  const [text, setText] = useState<string>('');
+  const [selectedFeeling, setSelectedFeeling] = useState<string>('Nothing');
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [userName, setUserName] = useState<string>('');
+
 
   useEffect(() => {
-    const fetchUserName = async () => {
+    const fetchUser = async () => {
       try {
         const user = await account.get();
-        setUserName(user.name);
+        setUserName(user.name || 'Unknown User');
       } catch (error) {
-        Alert.alert('Error', 'Unable to fetch user details. Please make sure you are logged in.');
+        console.error('Error fetching user data:', error);
+        Alert.alert('Error', 'Failed to fetch user data.');
       }
     };
-
-    fetchUserName();
+    fetchUser();
   }, []);
 
-  const uploadImage = async (fileUri) => {
+  const uploadImage = async (uri: string): Promise<string | null> => {
+    if (!uri) {
+      return null;
+    }
     try {
-      // Read the image file using FileSystem.readAsStringAsync() method
-      const fileInfo = await FileSystem.getInfoAsync(fileUri);
-      if (!fileInfo.exists) {
-        throw new Error('File does not exist');
-      }
-
-      // Prepare the file using FormData
-      const formData = new FormData();
-      formData.append('file', {
-        uri: fileUri,
-        name: 'image.jpg',  // Dynamically change the file name if needed
-        type: 'image/jpeg', // Ensure correct MIME type
-      });
-
-      // Upload the file to Appwrite Storage using the SDK
-      const uploadResponse = await storage.createFile(
-        '6751dc3c000511b022fb', // Bucket ID
-        ID.unique(),             // Unique file ID
-        formData
+      // Convert image URI to Blob
+      const response = await fetch(uri);
+      const blob = await response.blob();
+  
+      // Create a File object from the Blob
+      const file = new File([blob], `image_${Date.now()}.jpg`, { type: blob.type });
+  
+      // Upload the File to Appwrite
+      const fileResponse = await storage.createFile(
+        '6751dc3c000511b022fb', // bucket ID
+        ID.unique(),
+        file
       );
-
-      console.log('File uploaded successfully:', uploadResponse);
-
-      // Return the fileId from the response
-      return uploadResponse.$id;
+  
+      return fileResponse.$id;
     } catch (error) {
       console.error('Error uploading image:', error);
-      throw error;
+      Alert.alert('Error', 'Failed to upload image.');
+      return null;
     }
   };
+  
 
   const handlePost = async () => {
+    // Indicate that the process is in progress
     setIsLoading(true);
-
     try {
-      if (!userName) {
-        Alert.alert('Error', 'User Name is missing. Please ensure you are logged in.');
+      // Validate that the text is not empty
+      if (!text.trim()) {
+        Alert.alert('Error', 'Please enter some text.');
         setIsLoading(false);
         return;
       }
-
+  
+      let fileId = null;
       let imageUrl = null;
-
-      // Only upload image if imageUri exists
+  
+      // If an image is selected, upload it to Appwrite
       if (imageUri) {
-        const fileId = await uploadImage(imageUri); // Upload the image and get fileId
-        if (fileId) {
-          imageUrl = `https://cloud.appwrite.io/v1/storage/buckets/6751dc3c000511b022fb/files/${fileId}/view`;
-        } else {
+        fileId = await uploadImage(imageUri);
+        if (!fileId) {
           setIsLoading(false);
           return;
         }
+        // Construct the URL to access the uploaded image
+        imageUrl = `https://cloud.appwrite.io/v1/storage/buckets/6751dc3c000511b022fb/files/${fileId}/view`;
       }
-
-      // Create the post document in your Appwrite database
-      const postResponse = await databases.createDocument(
-        '674b25a90026b3ff8a21',  // Database ID
-        '674b25d2001a880f2106',  // Collection ID
-        ID.unique(),             // Unique document ID
+  
+      // Create a new document in the Appwrite database with the post data
+      await databases.createDocument(
+        '674b25a90026b3ff8a21', // Database ID
+        '674b25d2001a880f2106', // Collection ID
+        ID.unique(),
         {
-          text: text,
-          image: imageUrl,  // Use the URL with the correct fileId
+          text,
+          image: imageUrl, // This will be `null` if no image is uploaded
           feeling: selectedFeeling,
-          userName: userName,
+          userName,
         }
       );
-
-      console.log('Post created successfully:', postResponse);
+  
+      Alert.alert('Success', 'Post created successfully!');
+  
+      // Reset the input fields to their initial state
       setText('');
       setSelectedFeeling('Nothing');
       setImageUri(null);
     } catch (error) {
-      console.error('Error creating post:', error.message || error);
+      console.error('Error creating post:', error);
       Alert.alert('Error', `Failed to create post: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
   };
+  
+  
 
   const handleAddPhoto = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -127,9 +129,11 @@ export default function CreatePost() {
       quality: 1,
     });
 
-    if (!result.canceled && result.assets) {
-      const imageUri = result.assets[0].uri;
-      setImageUri(imageUri);
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const asset = result.assets[0];
+      setImageUri(asset.uri);
+    } else {
+      Alert.alert('No Image Selected', 'Please select an image.');
     }
   };
 
@@ -137,23 +141,54 @@ export default function CreatePost() {
     setImageUri(null);
   };
 
+  const feelings = [
+    { emoji: '😊', value: 'Happy' },
+    { emoji: '😢', value: 'Sad' },
+    { emoji: '🤩', value: 'Excited' },
+    { emoji: '😡', value: 'Angry' },
+    { emoji: '😐', value: 'Nothing' },
+  ];
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.postBox}>
           <Text style={styles.header}>Create Post</Text>
 
-          <Picker
-            selectedValue={selectedFeeling}
-            onValueChange={(itemValue) => setSelectedFeeling(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="What are you feeling?" value="Nothing" />
-            <Picker.Item label="Happy" value="Happy" />
-            <Picker.Item label="Sad" value="Sad" />
-            <Picker.Item label="Excited" value="Excited" />
-            <Picker.Item label="Angry" value="Angry" />
-          </Picker>
+          <View style={styles.feelingSelector}>
+            <Text style={styles.feelingLabel}>Choose your feeling:</Text>
+            
+            <View style={styles.feelingsContainer}>
+              {feelings.map(({ emoji, value }) => (
+                <TouchableOpacity
+                key={value}
+                style={[
+                  styles.feelingButton,
+                  selectedFeeling === value && styles.selectedFeelingButton,
+                ]}
+                onPress={() => setSelectedFeeling(value)}
+                >
+                  <Text
+                  style={[
+                    styles.feelingButtonText,
+                    selectedFeeling === value && styles.selectedFeelingText,
+                  ]}
+                  >
+                    {emoji}
+                    </Text>
+                    </TouchableOpacity>
+                  ))}
+                  </View>
+                  </View>
+
+          <TextInput
+            style={styles.textInput}
+            placeholder="Write your thoughts here..."
+            placeholderTextColor="#999"
+            value={text}
+            onChangeText={setText}
+            multiline
+          />
 
           <TouchableOpacity style={styles.addPhotoButton} onPress={handleAddPhoto}>
             {imageUri ? (
@@ -169,25 +204,12 @@ export default function CreatePost() {
             </TouchableOpacity>
           )}
 
-          <TextInput
-            style={styles.textInput}
-            placeholder="Write something..."
-            placeholderTextColor="#999"
-            value={text}
-            onChangeText={setText}
-            multiline
-          />
-
           <TouchableOpacity
             style={[styles.postButton, isLoading && styles.disabledButton]}
             onPress={handlePost}
             disabled={isLoading}
           >
-            {isLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.postButtonText}>Post</Text>
-            )}
+            {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.postButtonText}>Post</Text>}
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -195,99 +217,110 @@ export default function CreatePost() {
   );
 }
 
-const { width, height } = Dimensions.get('window');
-
-export const styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFAF5',
-    paddingHorizontal: width * 0.02,
-    paddingTop: Platform.OS === 'ios' ? 40 : 20,
   },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'flex-start',
+  scrollViewContent: {
+    paddingHorizontal: 20,
+    paddingVertical: 20,
   },
   postBox: {
-    flex: 0.8,
     backgroundColor: '#FAE1C4',
     padding: 20,
     borderRadius: 20,
-    shadowColor: '#C36922',
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowRadius: 10,
     elevation: 5,
-    marginTop: 10,
   },
   header: {
-    fontSize: width * 0.06,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 15,
     textAlign: 'center',
-  },
-  picker: {
     marginBottom: 10,
-    backgroundColor: '#3DB7AD',
-    height: 65,
-    borderRadius: 20,
-    paddingLeft: 20,
-    fontSize: width * 0.04,
+  },
+  
+  feelingSelector: {
+    marginBottom: 20,
+  },
+  feelingLabel: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  feelingsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  feelingButton: {
+    padding: 10,
+    margin: 5,
+    borderRadius: 50, 
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 55,
+    height: 55,
+  },
+  feelingButtonText: {
+    fontSize: 25, 
+  },
+  
+  selectedFeelingButton: {
+    backgroundColor: '#FF9F9F',
+  },
+  selectedFeelingText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  textInput: {
+    height: 100,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 20,
+    textAlignVertical: 'top',
+  },
+  addPhotoText: {
+    justifyContent: 'center',
   },
   addPhotoButton: {
     backgroundColor: '#EE9E5F',
+    height: 200,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
-    height: 200,
-    borderRadius: 20,
+    borderRadius: 10,
+    marginBottom: 20,
   },
   imagePreview: {
     width: '100%',
     height: '100%',
-    borderRadius: 20,
-  },
-  addPhotoText: {
-    color: '#fff',
-    fontSize: width * 0.05,
+    borderRadius: 10,
   },
   deleteButton: {
     backgroundColor: '#F27D7D',
-    justifyContent: 'center',
+    padding: 10,
+    borderRadius: 10,
     alignItems: 'center',
     marginBottom: 20,
-    paddingVertical: 8,
-    borderRadius: 10,
   },
   deleteButtonText: {
     color: '#fff',
-    fontSize: width * 0.05,
-  },
-  textInput: {
-    fontSize: width * 0.04,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    height: height * 0.15,
-    paddingLeft: 10,
-    paddingTop: 10,
-    marginBottom: 20,
-    textAlignVertical: 'top',
+    fontSize: 16,
   },
   postButton: {
-    backgroundColor: '#6D9886',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#6D9DC5',
     paddingVertical: 15,
     borderRadius: 20,
-    marginBottom: 20,
-  },
-  disabledButton: {
-    backgroundColor: '#B4B4B4',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   postButtonText: {
-    fontSize: width * 0.05,
     color: '#fff',
-    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  disabledButton: {
+    backgroundColor: '#B0BEC5',
   },
 });
