@@ -2,8 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Image, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Client, Storage, Databases, ID, Account } from 'appwrite';
+import { uploadImage } from '../appwrite/appwriteConfig';
 
 // Appwrite Client setup
+
+interface ImageFile {
+  uri: string;
+  name: string;
+  type: string;
+}
+
+
 const client = new Client();
 client
   .setEndpoint('https://cloud.appwrite.io/v1') // API Endpoint
@@ -41,19 +50,26 @@ export default function CreatePost() {
     try {
       // Convert image URI to Blob
       const response = await fetch(uri);
+      
+      if (!response.ok) throw new Error('Network response was not ok');
       const blob = await response.blob();
   
       // Create a File object from the Blob
-      const file = new File([blob], `image_${Date.now()}.jpg`, { type: blob.type });
-  
+      const fileExtension = uri.split('.').pop() || 'jpg';
+      const fileName = `image_${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExtension}`;
+      const file = new File([blob], fileName, { type: `image/${fileExtension}` });
+
       // Upload the File to Appwrite
       const fileResponse = await storage.createFile(
         '6751dc3c000511b022fb', // bucket ID
         ID.unique(),
-        file
+        file,
+        ['read', 'write'],
+        undefined
       );
   
       return fileResponse.$id;
+
     } catch (error) {
       console.error('Error uploading image:', error);
       Alert.alert('Error', 'Failed to upload image.');
@@ -61,6 +77,51 @@ export default function CreatePost() {
     }
   };
   
+  const handleAddPhoto = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'Permission to access media library is required!');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 0.8, // Reduced quality for better upload performance
+        base64: false,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        const fileUri = asset.uri;
+        console.log('Selected image URI:', fileUri); 
+        const fileName = fileUri.split('/').pop() || 'image.jpg';
+        const fileType = `image/${fileName.split('.').pop()?.toLowerCase() || 'jpeg'}`;
+
+        setImageUri(fileUri); // Set the URI for preview
+
+        const fileData: ImageFile = {
+          uri: fileUri,
+          name: fileName,
+          type: fileType,
+        };
+
+        try {
+          const uploadResult = await uploadImage(fileUri);
+          console.log('Image uploaded successfully:', uploadResult);
+        } catch (error) {
+          console.error('Error uploading image:', error);
+          Alert.alert('Error', 'Failed to upload the image. Please try again.');
+          setImageUri(null);
+        }
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to select image. Please try again.');
+    }
+  };
+
 
   const handlePost = async () => {
     // Indicate that the process is in progress
@@ -73,70 +134,37 @@ export default function CreatePost() {
         return;
       }
   
-      let fileId = null;
-      let imageUrl = null;
-  
-      // If an image is selected, upload it to Appwrite
+      let imageId: string | null = null;
       if (imageUri) {
-        fileId = await uploadImage(imageUri);
-        if (!fileId) {
-          setIsLoading(false);
-          return;
+        imageId = await uploadImage(imageUri);
+        if (!imageId) {
+          Alert.alert('Warning', 'Failed to upload image, but continuing with text post.');
         }
-        // Construct the URL to access the uploaded image
-        imageUrl = `https://cloud.appwrite.io/v1/storage/buckets/6751dc3c000511b022fb/files/${fileId}/view`;
       }
-  
-      // Create a new document in the Appwrite database with the post data
-      await databases.createDocument(
-        '674b25a90026b3ff8a21', // Database ID
-        '674b25d2001a880f2106', // Collection ID
-        ID.unique(),
-        {
-          text,
-          image: imageUrl, // This will be `null` if no image is uploaded
-          feeling: selectedFeeling,
-          userName,
-        }
-      );
-  
-      Alert.alert('Success', 'Post created successfully!');
-  
-      // Reset the input fields to their initial state
-      setText('');
-      setSelectedFeeling('Nothing');
-      setImageUri(null);
-    } catch (error) {
-      console.error('Error creating post:', error);
-      Alert.alert('Error', `Failed to create post: ${error.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  
+    await databases.createDocument(
+      '674b25a90026b3ff8a21',
+      '674b25d2001a880f2106',
+      ID.unique(),
+      {
+        text,
+        image: imageId,
+        feeling: selectedFeeling,
+        userName,
+        date: new Date().toISOString(),
+      }
+    );
 
-  const handleAddPhoto = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Permission to access media library is required!');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
-    });
-
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      const asset = result.assets[0];
-      setImageUri(asset.uri);
-    } else {
-      Alert.alert('No Image Selected', 'Please select an image.');
-    }
-  };
-
+    Alert.alert('Success', 'Post created successfully!');
+    setText('');
+    setSelectedFeeling('Nothing');
+    setImageUri(null);
+  } catch (error) {
+    console.error('Error creating post:', error);
+    Alert.alert('Error', 'Failed to create post. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
   const handleDeleteImage = () => {
     setImageUri(null);
   };
