@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { BackHandler } from 'react-native';
-import { usePathname, useRouter , Tabs } from 'expo-router';
-import { Client, Account } from 'appwrite'; 
-import BottomBar from '../components/bottomBar';
-import TopBar from '../components/topBar';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import React, { useState, useEffect } from "react";
+import { usePathname, useRouter, Tabs } from "expo-router";
+import BottomBar from "../components/bottomBar";
+import TopBar from "../components/topBar";
+import { Colors } from "@/constants/Colors";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { account } from "../appwrite/appwriteConfig";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -15,15 +14,7 @@ export default function TabLayout() {
   const [showTopBar, setShowTopBar] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Initialize Appwrite Client and Account service
-  const client = new Client();
-  client
-    .setEndpoint('https://cloud.appwrite.io/v1') // Your API Endpoint
-    .setProject('674b11a0000e39b3d48f'); // Your Project ID
-
-  const account = new Account(client);
-
-  const excludedRoutes = ['/', '/index', '/register', '/signin', '/settings'];
+  const excludedRoutes = ["/", "/index", "/register", "/signin", "/settings"];
 
   useEffect(() => {
     const checkLoginStatus = async () => {
@@ -39,15 +30,15 @@ export default function TabLayout() {
     checkLoginStatus();
 
     // Handle deleting sessions when on the index page
-    if (currentRoute === '/index') {
+    if (currentRoute === "/index") {
       const deleteSessions = async () => {
         try {
           // Log out the user by deleting all sessions
-          await account.deleteSession('current'); // Delete current session
+          await account.deleteSession("current"); // Delete current session
           setIsLoggedIn(false); // Update login state
-          router.push('/signin'); // Redirect user to sign-in page after logging out
+          router.push("/signin"); // Redirect user to sign-in page after logging out
         } catch (error) {
-          console.error('Error deleting session:', error);
+          console.error("Error deleting session:", error);
         }
       };
 
@@ -71,9 +62,9 @@ export default function TabLayout() {
 
       <Tabs
         screenOptions={({ route }) => ({
-          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-          headerShown: excludedRoutes.includes(route.path), // Hide header for excluded routes
-          tabBarStyle: { display: 'none' }, // Hide default bottom bar
+          tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+          headerShown: excludedRoutes.includes(route.path ? route.path : ""), // Hide header for excluded routes
+          tabBarStyle: { display: "none" }, // Hide default bottom bar
         })}
       >
         {/* Define your Tab Screens here */}

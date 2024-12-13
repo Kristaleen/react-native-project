@@ -1,15 +1,8 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { router, useRouter } from 'expo-router';
-import { Client, Account } from 'react-native-appwrite';
-
-// Initialize Appwrite Client and Account
-const client = new Client()
-  .setEndpoint('https://cloud.appwrite.io/v1') // Appwrite endpoint
-  .setProject('674b11a0000e39b3d48f'); // Appwrite project ID
-
-const account = new Account(client);
+import React, { useState } from "react";
+import { View, StyleSheet, Text, TouchableOpacity, Image } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { router, useRouter } from "expo-router";
+import { account } from "../appwrite/appwriteConfig";
 
 export default function TopBar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -21,10 +14,10 @@ export default function TopBar() {
 
   const handleLogout = async () => {
     try {
-      await account.deleteSession('current');
-      router.push('/'); // Redirect to the login page
+      await account.deleteSession("current");
+      router.push("/"); // Redirect to the login page
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
 
@@ -37,7 +30,9 @@ export default function TopBar() {
       {menuOpen && <View style={styles.backdrop} onTouchEnd={toggleMenu} />}
 
       {/* Popup Menu */}
-      {menuOpen && <PopupMenu toggleMenu={toggleMenu} handleLogout={handleLogout} />}
+      {menuOpen && (
+        <PopupMenu toggleMenu={toggleMenu} handleLogout={handleLogout} />
+      )}
     </View>
   );
 }
@@ -52,7 +47,7 @@ const TopBarComponent = ({ toggleMenu }: { toggleMenu: () => void }) => (
     {/* Center: Logo and Text */}
     <View style={styles.centerContainer}>
       <Image
-        source={require('../../assets/images/logo.png')}
+        source={require("../../assets/images/logo.png")}
         style={styles.logo}
       />
       <Text style={styles.logoText}>FeelTok</Text>
@@ -78,7 +73,7 @@ const PopupMenu = ({
     {/* Logo and Text */}
     <View style={styles.logoContainer}>
       <Image
-        source={require('../../assets/images/logo.png')}
+        source={require("../../assets/images/logo.png")}
         style={styles.popupLogo}
       />
       <Text style={styles.popupLogoText}>FeelTok</Text>
@@ -89,12 +84,12 @@ const PopupMenu = ({
       style={styles.menuOption}
       onPress={() => {
         toggleMenu();
-        router.push('/(tabs)/Home'); 
+        router.push("/(tabs)/Home");
       }}
     >
       <View style={styles.menuItem}>
         <Feather name="home" size={20} color="#333" />
-        <Text style={styles.menuText}>  Home</Text>
+        <Text style={styles.menuText}> Home</Text>
       </View>
     </TouchableOpacity>
 
@@ -103,12 +98,12 @@ const PopupMenu = ({
       style={styles.menuOption}
       onPress={() => {
         toggleMenu();
-        router.push('/(tabs)/profile'); // Adjust route as needed
+        router.push("/(tabs)/profile"); // Adjust route as needed
       }}
     >
       <View style={styles.menuItem}>
         <Feather name="user" size={20} color="#333" />
-        <Text style={styles.menuText}>  Profile</Text>
+        <Text style={styles.menuText}> Profile</Text>
       </View>
     </TouchableOpacity>
 
@@ -117,29 +112,28 @@ const PopupMenu = ({
       style={styles.menuOption}
       onPress={() => {
         toggleMenu();
-        router.push('/(tabs)/aboutus');
+        router.push("/(tabs)/aboutus");
       }}
     >
       <View style={styles.menuItem}>
         <Feather name="info" size={20} color="#333" />
-        <Text style={styles.menuText}>  About Us</Text>
+        <Text style={styles.menuText}> About Us</Text>
       </View>
     </TouchableOpacity>
 
     {/* Settings */}
-    <TouchableOpacity 
-      style={styles.menuOption} 
+    <TouchableOpacity
+      style={styles.menuOption}
       onPress={() => {
         toggleMenu();
-        router.push('/(tabs)/settings');
+        router.push("/(tabs)/settings");
       }}
     >
       <View style={styles.menuItem}>
         <Feather name="settings" size={20} color="#333" />
-        <Text style={styles.menuText}>  Settings</Text>
+        <Text style={styles.menuText}> Settings</Text>
       </View>
     </TouchableOpacity>
-
 
     {/* Logout Button */}
     <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -151,16 +145,16 @@ const PopupMenu = ({
   </View>
 );
 
-
 const styles = StyleSheet.create({
+  container: {},
   topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     height: 100,
-    backgroundColor: '#5AD4CB',
+    backgroundColor: "#5AD4CB",
     paddingHorizontal: 15,
-    shadowColor: '#C36922',
+    shadowColor: "#C36922",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 5,
@@ -172,65 +166,65 @@ const styles = StyleSheet.create({
     padding: 20,
     width: 70,
     height: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     zIndex: 3,
-    marginTop: 20
+    marginTop: 20,
   },
 
   centerContainer: {
-    flexDirection: 'column', 
-    alignItems: 'center',
+    flexDirection: "column",
+    alignItems: "center",
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
 
   logo: {
-    width: 50, 
-    height: 50, 
-    resizeMode: 'contain',
-    marginBottom: -10, 
+    width: 50,
+    height: 50,
+    resizeMode: "contain",
+    marginBottom: -10,
     marginTop: 30,
   },
   logoText: {
     fontSize: 25,
-    fontWeight: '800',
-    color: '#333',
+    fontWeight: "800",
+    color: "#333",
   },
 
   circle: {
     width: 40,
     height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 50,
     borderWidth: 1,
-    borderColor: '#fff',
+    borderColor: "#fff",
   },
 
   popupMenu: {
-    position: 'absolute',
-    top: '100%', 
+    position: "absolute",
+    top: "100%",
     left: 0,
-    right: '20%',
-    backgroundColor: '#fff',
-    zIndex: 2, 
+    right: "20%",
+    backgroundColor: "#fff",
+    zIndex: 2,
     padding: 50,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     height: 800,
     shadowOpacity: 0.5,
     shadowRadius: 8,
-    elevation: 5, 
+    elevation: 5,
   },
 
   backdrop: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     zIndex: 1,
   },
 
@@ -240,51 +234,50 @@ const styles = StyleSheet.create({
 
   menuText: {
     fontSize: 20,
-    color: '#333',
+    color: "#333",
   },
 
   // Popup-Logo
   logoContainer: {
-    flexDirection: 'column', 
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 50,
-    marginTop: -30
+    marginTop: -30,
   },
 
   popupLogo: {
     width: 120,
     height: 120,
-    resizeMode: 'contain',
-    marginBottom: -20, 
+    resizeMode: "contain",
+    marginBottom: -20,
   },
 
   popupLogoText: {
     fontSize: 40,
-    fontWeight: '900',
-    color: '#333',
+    fontWeight: "900",
+    color: "#333",
   },
 
-
   menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   // Log Out Button Styles
   logoutButton: {
     marginTop: 150,
-    backgroundColor: '#fff', 
+    backgroundColor: "#fff",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 5,
-    alignItems: 'center',
+    alignItems: "center",
   },
 
   logoutText: {
     fontSize: 18,
-    color: '#8B0000',
-    fontWeight: 'bold',
+    color: "#8B0000",
+    fontWeight: "bold",
     marginLeft: 10,
   },
 });

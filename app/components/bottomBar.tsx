@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons'; 
+import React from "react";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function BottomBar() {
   const router = useRouter();
@@ -10,10 +10,16 @@ export default function BottomBar() {
     <View style={styles.container}>
       {/* Left Icons */}
       <View style={styles.iconGroup}>
-        <TouchableOpacity onPress={() => router.push('/create')} style={styles.iconButton}>
+        <TouchableOpacity
+          onPress={() => router.push("/create")}
+          style={styles.iconButton}
+        >
           <Ionicons name="bookmark-outline" size={30} color="#093B39" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/newpage')} style={styles.iconButton}>
+        <TouchableOpacity
+          onPress={() => router.push("/newpage")}
+          style={styles.iconButton}
+        >
           <Ionicons name="notifications-outline" size={30} color="#093B39" />
         </TouchableOpacity>
       </View>
@@ -21,16 +27,23 @@ export default function BottomBar() {
       {/* Center Button */}
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => router.push('/create')}>
+        onPress={() => router.push("/create")}
+      >
         <Ionicons name="add" size={32} color="#fff" />
       </TouchableOpacity>
 
       {/* Right Icons */}
       <View style={styles.iconGroup}>
-        <TouchableOpacity onPress={() => router.push('/aboutus')} style={styles.iconButton}>
+        <TouchableOpacity
+          onPress={() => router.push("/aboutus")}
+          style={styles.iconButton}
+        >
           <Ionicons name="person-outline" size={30} color="#093B39" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/Home')} style={styles.iconButton}>
+        <TouchableOpacity
+          onPress={() => router.push("/Home")}
+          style={styles.iconButton}
+        >
           <Ionicons name="home-outline" size={30} color="#093B39" />
         </TouchableOpacity>
       </View>
@@ -40,36 +53,36 @@ export default function BottomBar() {
 
 const styles = StyleSheet.create({
   container: {
-    position: 'relative',
+    position: "relative",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#65BCB5',
+    backgroundColor: "#65BCB5",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    height: 80, 
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 25, 
+    height: 80,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 25,
     elevation: 5,
   },
   iconGroup: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 25,
   },
   iconButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   fab: {
-    backgroundColor: '#ED802A',
+    backgroundColor: "#ED802A",
     height: 65,
     width: 65,
     borderRadius: 32.5,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 6,
-    marginBottom: 10, 
+    marginBottom: 10,
   },
 });

@@ -1,33 +1,45 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions, KeyboardAvoidingView, Platform, Button } from 'react-native';
-import { useRouter } from 'expo-router';
+import React from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { useRouter } from "expo-router";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 export default function SplashScreen() {
   const router = useRouter();
 
   const handleRegister = () => {
-    router.push('/register'); // Navigate to the register page
+    router.push("/register"); // Navigate to the register page
   };
-  
+
   const handleSignIn = () => {
-    router.push('/signin'); // Navigate to the sign-in page
+    router.push("/signin"); // Navigate to the sign-in page
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <View style={styles.container}>
         <View style={styles.header}>
           <Image
-            source={require('@/assets/images/background.png')}
+            source={require("@/assets/images/background.png")}
             style={styles.background}
           />
         </View>
 
         <View style={styles.logoContainer}>
           <Image
-            source={require('@/assets/images/logo.png')}
+            source={require("@/assets/images/logo.png")}
             style={styles.logo}
           />
           <Text style={styles.headerTitle}>FeelTok</Text>
@@ -40,7 +52,10 @@ export default function SplashScreen() {
           <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
             <Text style={styles.signInText}>Sign in</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
+          <TouchableOpacity
+            style={styles.registerButton}
+            onPress={handleRegister}
+          >
             <Text style={styles.registerText}>Register</Text>
           </TouchableOpacity>
         </View>
@@ -52,87 +67,87 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#EDC45A',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
+    backgroundColor: "#EDC45A",
+    justifyContent: "flex-start",
+    alignItems: "center",
   },
   header: {
-    width: '100%',
-    height: height * 0.45, 
-    position: 'relative',
+    width: "100%",
+    height: height * 0.45,
+    position: "relative",
   },
   background: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
   logoContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: height * 0.12,
-    alignItems: 'center',
-    width: '100%',
+    alignItems: "center",
+    width: "100%",
   },
   logo: {
     width: width * 0.35,
     height: width * 0.35,
-    resizeMode: 'contain',
-    marginTop: height * 0.10,
+    resizeMode: "contain",
+    marginTop: height * 0.1,
     marginBottom: -230,
   },
   headerTitle: {
     fontSize: width * 0.15,
-    fontWeight: 'bold',
-    color: '#000',
-    position: 'absolute',  
-    top: height * 0.25,    
+    fontWeight: "bold",
+    color: "#000",
+    position: "absolute",
+    top: height * 0.25,
   },
   whiteSection: {
     flex: 1,
-    width: '100%',
-    backgroundColor: '#FFF',
+    width: "100%",
+    backgroundColor: "#FFF",
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50,
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: height * 0.02,
     paddingHorizontal: width * 0.02,
-    marginTop: height * 0.10,
+    marginTop: height * 0.1,
   },
   title: {
     fontSize: width * 0.05,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: "bold",
+    color: "#000",
     marginBottom: height * 0.01,
   },
   subtitle: {
-    fontSize: width * 0.040,
-    color: '#555',
+    fontSize: width * 0.04,
+    color: "#555",
     marginBottom: height * 0.04,
-    textAlign: 'center',
+    textAlign: "center",
   },
   signInButton: {
-    backgroundColor: '#60C5A8',
-    paddingVertical: height * 0.010,
+    backgroundColor: "#60C5A8",
+    paddingVertical: height * 0.01,
     borderRadius: 50,
     width: width * 0.75,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: height * 0.02,
   },
   signInText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: width * 0.055,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   registerButton: {
     borderWidth: 2,
-    borderColor: '#000',
-    paddingVertical: height * 0.010,
+    borderColor: "#000",
+    paddingVertical: height * 0.01,
     borderRadius: 50,
     width: width * 0.75,
-    alignItems: 'center',
+    alignItems: "center",
   },
   registerText: {
-    color: '#000',
+    color: "#000",
     fontSize: width * 0.055,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

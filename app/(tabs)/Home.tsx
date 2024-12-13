@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, FlatList, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Client, Account, Databases } from 'react-native-appwrite';
-
-// Initialize Appwrite Client and Account
-const client = new Client()
-  .setEndpoint('https://cloud.appwrite.io/v1') // Appwrite endpoint
-  .setProject('674b11a0000e39b3d48f'); // Appwrite project ID
-
-const account = new Account(client);
-const databases = new Databases(client);
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  FlatList,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { databases, storage } from "../appwrite/appwriteConfig";
 
 interface Post {
   id: string;
@@ -28,17 +27,17 @@ export default function HomePage() {
   const fetchPosts = async () => {
     try {
       const response = await databases.listDocuments(
-        '674b25a90026b3ff8a21', // Database ID
-        '674b25d2001a880f2106'  // Collection ID
+        "674b25a90026b3ff8a21", // Database ID
+        "674b25d2001a880f2106" // Collection ID
       );
 
       // Map fetched data to our Post interface
       const postList = response.documents.map((doc: any) => ({
         id: doc.$id,
-        name: doc.userName || 'Anonymous',
+        name: doc.userName || "Anonymous",
         post: doc.text,
         image: doc.image || null,
-        feeling: doc.feeling || 'Nothing', // Add feeling data
+        feeling: doc.feeling || "Nothing", // Add feeling data
       }));
 
       setPosts(postList); // Set the state with the fetched posts
@@ -68,36 +67,43 @@ export default function HomePage() {
   };
 
   // Render each post
-  const renderPost = ({ item }: { item: Post }) => (
-    <View style={styles.postContainer}>
-      {/* Feeling box */}
-      <View style={styles.feelingBox}>
-        <Text style={styles.feelingText}>Feeling: {item.feeling}</Text>
+  const renderPost = ({ item }: { item: Post }) => {
+    return (
+      <View style={styles.postContainer}>
+        {/* Feeling box */}
+        <View style={styles.feelingBox}>
+          <Text style={styles.feelingText}>Feeling: {item.feeling}</Text>
+        </View>
+        <View style={styles.header}>
+          <Image
+            source={require("@/assets/images/profile.jpg")}
+            style={styles.profilePic}
+          />
+          <Text style={styles.name}>{item.name}</Text>
+        </View>
+        <Text style={styles.postText}>{item.post}</Text>
+        {item.image && (
+          <Image source={{ uri: item.image }} style={styles.postImage} />
+        )}
+        <View style={styles.emojisContainer}>
+          {["😀", "😠", "❤️", "😢", "😱"].map((emoji) => (
+            <TouchableOpacity
+              key={emoji}
+              style={styles.emojiButton}
+              onPress={() => handleReaction(item.id, emoji)}
+            >
+              <Text style={styles.emojiText}>{emoji}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <Text style={styles.reactionText}>
+          {reactions[item.id]
+            ? `You reacted with ${reactions[item.id]}`
+            : "No reaction yet"}
+        </Text>
       </View>
-      <View style={styles.header}>
-        <Image source={require('@/assets/images/profile.jpg')} style={styles.profilePic} />
-        <Text style={styles.name}>{item.name}</Text>
-      </View>
-      <Text style={styles.postText}>{item.post}</Text>
-      {item.image && (
-        <Image source={{ uri: item.image }} style={styles.postImage} />
-      )}
-      <View style={styles.emojisContainer}>
-        {['😀', '😠', '❤️', '😢', '😱'].map((emoji) => (
-          <TouchableOpacity
-            key={emoji}
-            style={styles.emojiButton}
-            onPress={() => handleReaction(item.id, emoji)}
-          >
-            <Text style={styles.emojiText}>{emoji}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <Text style={styles.reactionText}>
-        {reactions[item.id] ? `You reacted with ${reactions[item.id]}` : 'No reaction yet'}
-      </Text>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -114,25 +120,25 @@ export default function HomePage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f4f7fc', // Light grayish-blue background
+    backgroundColor: "#f4f7fc", // Light grayish-blue background
     paddingTop: 10,
   },
   postContainer: {
-    backgroundColor: '#FAE1C4', // White background for posts
+    backgroundColor: "#FAE1C4", // White background for posts
     marginHorizontal: 15,
     marginBottom: 15,
     padding: 20,
     borderRadius: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowRadius: 10,
     elevation: 5,
   },
   feelingBox: {
-    position: 'absolute',
+    position: "absolute",
     top: 10,
     right: 10,
-    backgroundColor: '#FFCCBC', 
+    backgroundColor: "#FFCCBC",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
@@ -140,13 +146,13 @@ const styles = StyleSheet.create({
   },
   feelingText: {
     fontSize: 15,
-    fontWeight: 'bold',
-    color: '#D32F2F', 
+    fontWeight: "bold",
+    color: "#D32F2F",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
     marginBottom: 10,
   },
   profilePic: {
@@ -155,35 +161,35 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   name: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 16,
     marginLeft: 10,
-    color: '#333',
+    color: "#333",
   },
   postText: {
     fontSize: 15,
-    color: '#444',
+    color: "#444",
     lineHeight: 22,
   },
   postImage: {
-    width: '100%',
+    width: "100%",
     height: 200,
     marginTop: 15,
     borderRadius: 15,
   },
   emojisContainer: {
     marginTop: 15,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '70%',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "70%",
   },
   emojiButton: {
     padding: 15,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5",
     borderRadius: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
@@ -194,7 +200,7 @@ const styles = StyleSheet.create({
   reactionText: {
     marginTop: 10,
     fontSize: 14,
-    color: '#555',
-    fontStyle: 'italic',
+    color: "#555",
+    fontStyle: "italic",
   },
 });
