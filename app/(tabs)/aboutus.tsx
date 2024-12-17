@@ -1,13 +1,28 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity } from 'react-native';
+import { Feather } from '@expo/vector-icons'; // Ensure expo-vector-icons is installed
+import { useRouter } from 'expo-router'; // Navigation using expo-router
 
 const { width } = Dimensions.get('window');
 
 export default function About() {
+  const router = useRouter(); // Use router for navigation
+
   return (
     <ScrollView style={styles.container}>
-      {/* Page Header */}
-      <Text style={styles.headerText}>About FeelTok</Text>
+      {/* Header Section with Back Button */}
+      <View style={styles.headerContainer}>
+        {/* Back Button */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.push('./settings')} // Navigate back to settings
+        >
+          <Feather color="#000" name="chevron-left" size={30} />
+        </TouchableOpacity>
+
+        {/* Page Header */}
+        <Text style={styles.headerText}>About FeelTok</Text>
+      </View>
 
       {/* Description Section */}
       <Text style={styles.description}>
@@ -16,23 +31,19 @@ export default function About() {
         FeelTok is here to make that happen.
       </Text>
 
-      {/* Header for Our Mission */}
+      {/* Our Mission Section */}
       <Text style={styles.missionHeader}>Our Mission</Text>
-
-      {/* Mission Description */}
       <Text style={styles.missionDescription}>
         Spreading Positivity, One Post at a Time. We believe that everyone has a story, a feeling, or a thought that deserves to be shared.
         Our mission is to create a kind and compassionate environment where users can feel free to be themselves, find encouragement,
         and build meaningful connections.
       </Text>
 
-      {/* Header for Contact Us */}
+      {/* Contact Us Section */}
       <Text style={styles.contactHeader}>Contact Us</Text>
-
-      {/* Contact Description */}
       <Text style={styles.contactDescription}>
         If you have any questions, suggestions, or just want to say hello, feel free to reach out to our team at 
-        <Text style={styles.email}>support@feeltok.com</Text>.
+        <Text style={styles.email}> support@feeltok.com</Text>.
       </Text>
     </ScrollView>
   );
@@ -43,22 +54,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFAF5',
     paddingHorizontal: 20,
-    paddingBottom: 40, // Ensure there's padding at the bottom to avoid cutting off content
+    paddingBottom: 40, // Padding at the bottom to avoid content cut-off
   },
-
-  // Header style for the page
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 40,
+    marginBottom: 20,
+  },
+  backButton: {
+    marginRight: 20,
+    marginTop: 3,
+  },
   headerText: {
     fontSize: 24,
     fontWeight: 'bold',
-    fontStyle: 'italic',
     color: '#000',
-    marginBottom: 20,
+    flex: 1, 
     textAlign: 'left',
-    width: '100%',
-    marginTop: 40,
   },
-
-  // Description text style
   description: {
     fontSize: 16,
     fontWeight: '400',
@@ -67,8 +81,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 20,
   },
-
-  // Mission header style
   missionHeader: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -78,8 +90,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'left',
   },
-
-  // Mission description style
   missionDescription: {
     fontSize: 16,
     fontWeight: '400',
@@ -88,8 +98,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 20,
   },
-
-  // Contact header style
   contactHeader: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -99,8 +107,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'left',
   },
-
-  // Contact description style
   contactDescription: {
     fontSize: 16,
     fontWeight: '400',
@@ -108,8 +114,6 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     lineHeight: 24,
   },
-
-  // Style for the email address
   email: {
     color: 'blue',
     fontWeight: '400',

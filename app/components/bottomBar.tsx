@@ -10,17 +10,17 @@ export default function BottomBar() {
     <View style={styles.container}>
       {/* Left Icons */}
       <View style={styles.iconGroup}>
-        <TouchableOpacity
-          onPress={() => router.push("/create")}
+       <TouchableOpacity
+          onPress={() => router.push("/Home")}
           style={styles.iconButton}
         >
-          <Ionicons name="bookmark-outline" size={30} color="#093B39" />
+          <Ionicons name="home-outline" size={30} color="#093B39" />
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => router.push("/newpage")}
+          onPress={() => router.push("/profile")}
           style={styles.iconButton}
         >
-          <Ionicons name="notifications-outline" size={30} color="#093B39" />
+          <Ionicons name="person-outline" size={30} color="#093B39" />
         </TouchableOpacity>
       </View>
 
@@ -33,19 +33,21 @@ export default function BottomBar() {
       </TouchableOpacity>
 
       {/* Right Icons */}
+      <TouchableOpacity
+          onPress={() => router.push("/notification")}
+          style={styles.iconButton}
+        >
+          <Ionicons name="notifications-outline" size={30} color="#093B39" />
+        </TouchableOpacity>
       <View style={styles.iconGroup}>
+        
         <TouchableOpacity
-          onPress={() => router.push("/aboutus")}
+          onPress={() => router.push("/create")}
           style={styles.iconButton}
         >
-          <Ionicons name="person-outline" size={30} color="#093B39" />
+          <Ionicons name="bookmark-outline" size={30} color="#093B39" />
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => router.push("/Home")}
-          style={styles.iconButton}
-        >
-          <Ionicons name="home-outline" size={30} color="#093B39" />
-        </TouchableOpacity>
+       
       </View>
     </View>
   );
@@ -58,8 +60,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: "#65BCB5",
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
     height: 80,
     flexDirection: "row",
     justifyContent: "space-between",

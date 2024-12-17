@@ -172,27 +172,24 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   postImage: {
-    width: "100%",
-    height: 200,
+    width: "113.89%",
+    height: 400,
+    marginLeft:-20,
     marginTop: 15,
-    borderRadius: 15,
+    
   },
   emojisContainer: {
-    marginTop: 15,
+    marginTop: 0,
     flexDirection: "row",
-    justifyContent: "space-around",
-    width: "70%",
+    justifyContent: "space-between", 
+    width: "30%",
   },
   emojiButton: {
     padding: 15,
-    backgroundColor: "#F5F5F5",
     borderRadius: 50,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+    marginHorizontal: -5
   },
   emojiText: {
     fontSize: 28,

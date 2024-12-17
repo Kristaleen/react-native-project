@@ -50,14 +50,11 @@ export default function CreatePost() {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         allowsEditing: true,
-        quality: 1, // Reduced quality for better upload performance
+        quality: 1, 
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const asset = result.assets[0];
-
-        console.log("Selected image URI:", asset);
-
         setImage(asset);
       }
     } catch (error) {
@@ -66,71 +63,78 @@ export default function CreatePost() {
     }
   };
 
-  const uploadImage = async (file: ImagePicker.ImagePickerAsset) => {
+  const uploadImageToCloudinary = async (image: ImagePicker.ImagePickerAsset) => {
     try {
-      const fileType = file.type;
-      const uri = file.uri;
-      const fileSize = file.fileSize;
-      const fileName = file.fileName;
+      const cloudinaryUrl = "https://api.cloudinary.com/v1_1/dsyvsexwq/image/upload";
+      const formData = new FormData();
+  
+      // Ensure the URI works for Cloudinary
+      const uri = image.uri.startsWith("file://") ? image.uri : `file://${image.uri}`;
+  
+      // Prepare the file for Cloudinary
+      // Use a type assertion to ensure FormData accepts the object
+      formData.append("file", {
+        uri: uri,
+        type: "image/jpeg",
+        name: "upload.jpg",
+      } as any);
 
-      if (fileSize && fileSize && uri && fileName && fileType) {
-        const result = await storage.createFile(
-          "6751dc3c000511b022fb",
-          `${ID.unique()}.${file.uri.split(".")[1]}`,
-          {
-            name: `${ID.unique()}.${file.uri.split(".")[1]}`,
-            type: fileType,
-            size: fileSize,
-            uri: uri,
-          },
-          [Permission.read(Role.any())]
-        );
-
-        console.log(result);
-
-        return `https://cloud.appwrite.io/v1/storage/buckets/6751dc3c000511b022fb/files/${result.$id}/view?project=674b11a0000e39b3d48f&project=674b11a0000e39b3d48f&mode=admin`;
+      
+      formData.append("upload_preset", "unsigned_preset");
+  
+      const res = await fetch(cloudinaryUrl, {
+        method: "POST",
+        body: formData,
+      });
+  
+      const data = await res.json();
+      if (data.secure_url) {
+        return data.secure_url;
+      } else {
+        throw new Error("Cloudinary upload failed");
       }
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error("Cloudinary upload error:", error);
       return null;
     }
   };
+  
+  
 
   const handlePost = async () => {
-    // Indicate that the process is in progress
     setIsLoading(true);
     try {
-      // Validate that the text is not empty
       if (!text.trim()) {
         Alert.alert("Error", "Please enter some text.");
         setIsLoading(false);
         return;
       }
-
+  
+      let imageUrl = null;
       if (image) {
-        const imageId = await uploadImage(image);
-
-        if (!imageId) {
+        imageUrl = await uploadImageToCloudinary(image);
+  
+        if (!imageUrl) {
           Alert.alert(
             "Warning",
             "Failed to upload image, but continuing with text post."
           );
         }
-
-        await databases.createDocument(
-          "674b25a90026b3ff8a21",
-          "674b25d2001a880f2106",
-          ID.unique(),
-          {
-            text,
-            image: imageId,
-            feeling: selectedFeeling,
-            userName,
-            date: new Date().toISOString(),
-          }
-        );
       }
-
+  
+      await databases.createDocument(
+        "674b25a90026b3ff8a21", // Your database ID
+        "674b25d2001a880f2106", // Your collection ID
+        ID.unique(),
+        {
+          text,
+          image: imageUrl, 
+          feeling: selectedFeeling,
+          userName,
+          date: new Date().toISOString(),
+        }
+      );
+  
       Alert.alert("Success", "Post created successfully!");
       setText("");
       setSelectedFeeling("Nothing");
@@ -168,18 +172,10 @@ export default function CreatePost() {
               {feelings.map(({ emoji, value }) => (
                 <TouchableOpacity
                   key={value}
-                  style={[
-                    styles.feelingButton,
-                    selectedFeeling === value && styles.selectedFeelingButton,
-                  ]}
+                  style={[styles.feelingButton, selectedFeeling === value && styles.selectedFeelingButton]}
                   onPress={() => setSelectedFeeling(value)}
                 >
-                  <Text
-                    style={[
-                      styles.feelingButtonText,
-                      selectedFeeling === value && styles.selectedFeelingText,
-                    ]}
-                  >
+                  <Text style={[styles.feelingButtonText, selectedFeeling === value && styles.selectedFeelingText]}>
                     {emoji}
                   </Text>
                 </TouchableOpacity>
@@ -196,10 +192,7 @@ export default function CreatePost() {
             multiline
           />
 
-          <TouchableOpacity
-            style={styles.addPhotoButton}
-            onPress={handleAddPhoto}
-          >
+          <TouchableOpacity style={styles.addPhotoButton} onPress={handleAddPhoto}>
             {image ? (
               <Image source={{ uri: image.uri }} style={styles.imagePreview} />
             ) : (
@@ -208,10 +201,7 @@ export default function CreatePost() {
           </TouchableOpacity>
 
           {image && (
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={handleDeleteImage}
-            >
+            <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteImage}>
               <Text style={styles.deleteButtonText}>Delete Image</Text>
             </TouchableOpacity>
           )}
@@ -299,11 +289,12 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   addPhotoText: {
+    fontSize: 20,
     justifyContent: "center",
   },
   addPhotoButton: {
     backgroundColor: "#EE9E5F",
-    height: 200,
+    height: 500,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 10,
