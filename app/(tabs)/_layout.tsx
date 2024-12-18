@@ -14,7 +14,7 @@ export default function TabLayout() {
   const [showTopBar, setShowTopBar] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const excludedRoutes = ["/", "/index", "/register", "/signin", "/settings"];
+  const excludedRoutes = ["/", "/index", "/register", "/signin", "/settings", "/resetPassword", "/AdminPage"];
 
   useEffect(() => {
     const checkLoginStatus = async () => {

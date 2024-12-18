@@ -22,8 +22,19 @@
         "READ_MEDIA_IMAGES",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
-        "INTERNET"
-      ]
+        "INTERNET",
+        "GET_ACCOUNTS",
+        "USE_CREDENTIALS",
+        "ACCESS_NETWORK_STATE"
+      ],
+      "config": {
+        "googleSignIn": {
+          "certificateHash": "5E8F16062EA3CD2C4A0D547876BAA6F38CABF625",
+          "androidClientId": "145158790263-q5blfoc7dikrqvgamg6k26dkcr0hvpab.apps.googleusercontent.com",
+          "iosClientId": "145158790263-hrre01663uol600qkehl5vbg795ldf3u.apps.googleusercontent.com",
+          "webClientId": "145158790263-glucgp5c60mham66h05cimhqfd4le3li.apps.googleusercontent.com"
+        }
+      }
     },
     "web": {
       "bundler": "metro",
@@ -44,6 +55,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "4d462a1e-77a0-4b55-93d2-1fdb5cb1d2e5"
+      }
     }
   }
 }

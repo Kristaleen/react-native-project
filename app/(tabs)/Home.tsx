@@ -18,6 +18,14 @@ interface Post {
   feeling: string; // User's feeling (Happy, Sad, Excited, etc.)
 }
 
+const emojiToFeeling: { [key: string]: string } = {
+  "😀": "Happy",
+  "😠": "Angry",
+  "❤️": "Love",
+  "😢": "Sad",
+  "😱": "Shock",
+};
+
 export default function HomePage() {
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -60,9 +68,10 @@ export default function HomePage() {
 
   // Handle emoji reaction
   const handleReaction = (postId: string, emoji: string) => {
+    const feeling = emojiToFeeling[emoji]; // Get the corresponding feeling from emoji
     setReactions((prevReactions) => ({
       ...prevReactions,
-      [postId]: emoji,
+      [postId]: feeling,
     }));
   };
 
@@ -176,7 +185,6 @@ const styles = StyleSheet.create({
     height: 400,
     marginLeft:-20,
     marginTop: 15,
-    
   },
   emojisContainer: {
     marginTop: 0,

@@ -70,17 +70,26 @@ const Profile = () => {
   const handleDeletePost = async () => {
     if (postToDelete) {
       try {
-        await databases.deleteDocument("674b25a90026b3ff8a21", "674b25d2001a880f2106", postToDelete);
+        // Attempt to delete the post from the Appwrite database
+        await databases.deleteDocument(
+          "674b25a90026b3ff8a21", // Your database ID
+          "674b25d2001a880f2106", // Your collection ID
+          postToDelete // Document ID of the post to delete
+        );
+        
+        // Update the local state to remove the deleted post from the list
         setPosts((prevPosts) => prevPosts.filter((post) => post.$id !== postToDelete));
       } catch (error) {
-        
+        console.error("Failed to delete post:", error);
+        // Optionally, you can show an error message to the user here
       } finally {
+        // Close the modal and reset the postToDelete state
         setModalVisible(false);
         setPostToDelete(null);
       }
     }
   };
-
+  
   const handleCancelDelete = () => {
     setModalVisible(false);
     setPostToDelete(null);

@@ -257,12 +257,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   feelingsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: "row", 
+    marginLeft: -10,
+    justifyContent: "space-evenly", 
+    alignItems: "center", 
+    marginBottom: 20,
   },
   feelingButton: {
-    padding: 10,
-    margin: 5,
+    margin: 1,
     borderRadius: 50,
     alignItems: "center",
     justifyContent: "center",

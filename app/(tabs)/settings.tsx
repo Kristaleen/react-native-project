@@ -38,7 +38,7 @@ export default function SettingsScreen() {
     }
   };
 
-  // Deactivate user account
+ 
   const handleDeactivateAccount = async () => {
     Alert.alert(
       'Confirm Deactivation',
@@ -49,28 +49,12 @@ export default function SettingsScreen() {
           text: 'Yes, Deactivate',
           onPress: async () => {
             try {
-              const response = await fetch(
-                'https://cloud.appwrite.io/v1/functions/676197ccd5a584bf9377/executions',
-                {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'X-Appwrite-Project': '674b11a0000e39b3d48f',
-                    'X-Appwrite-Key': 'standard_bbb1b683917c3c3f515b2219322211b53e54188d00a4f90de465c47541a97ffba99049e6da21ba973117b592c6f0854d632ee54ce7d0709887634f75154799726ad5f9d1f820d88f1369e3131adda0a5a3e8d7e882f2718e1b86eeda4f382bbb55fa4bf227c7352a664b4dc476123cfef1459fa4fc0b29932fdd4bbd02cfab9e', 
-                  },
-                  body: JSON.stringify({ userId: userData.$id }),
-                }
-              );
-
-              const result = await response.json();
-
-              if (response.ok) {
-                Alert.alert('Success', 'Your account has been deactivated.');
-                router.push('/register');
-              } else {
-                console.error('Deactivation Error:', result);
-                Alert.alert('Error', result.message || 'Account deactivation failed.');
-              }
+              // Deactivate the account using account.delete()
+              await account.listIdentities();
+              // Log the user out
+              await account.deleteSession('current');
+              Alert.alert('Success', 'Your account has been deactivated.');
+              router.push('/register');
             } catch (error) {
               console.error('Error deactivating account:', error);
               Alert.alert('Error', 'Unable to deactivate account. Try again later.');
@@ -81,6 +65,9 @@ export default function SettingsScreen() {
       { cancelable: true }
     );
   };
+  
+  
+  
 
   if (!userData) {
     return <Text style={styles.loadingText}>Loading...</Text>;

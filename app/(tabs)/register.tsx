@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -19,7 +19,6 @@ import { useRouter } from "expo-router";
 import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
 import { account } from "../appwrite/appwriteConfig";
-import { OAuthProvider } from "react-native-appwrite";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -33,13 +32,53 @@ export default function RegisterScreen() {
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
-  // Configure Google OAuth
+  // Google OAuth State
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId:
-      "145158790263-glucgp5c60mham66h05cimhqfd4le3li.apps.googleusercontent.com",
-    redirectUri:
-      "145158790263-glucgp5c60mham66h05cimhqfd4le3li.apps.googleusercontent.com",
+    webClientId: "145158790263-glucgp5c60mham66h05cimhqfd4le3li.apps.googleusercontent.com", 
+    androidClientId: "145158790263-hch41nd84u6fpkib4cr61uaptde8ek10.apps.googleusercontent.com", 
+    iosClientId: "145158790263-hrre01663uol600qkehl5vbg795ldf3u.apps.googleusercontent.com", 
+   
   });
+
+  useEffect(() => {
+    if (response?.type === "success" && response.authentication?.accessToken) {
+      const token = response.authentication.accessToken;
+      setAccessToken(token);
+      console.log("Received Google OAuth Token:", token);
+      fetchUserInfo(token);
+    } else if (response?.type === "error") {
+      console.error("Google OAuth Error:", response.error);
+    }
+  }, [response]);
+
+  // Fetch Google User Info
+  const fetchUserInfo = async (token: string) => {
+    if (!token) {
+      console.error("No token received from Google OAuth.");
+      return;
+    }
+
+    try {
+      const response = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user info");
+      }
+
+      const userInfo = await response.json();
+      setUser(userInfo);
+      console.log("Google User Info:", userInfo);
+      router.push("/Home");
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+      Alert.alert("Error", "Failed to retrieve user information.");
+    }
+  };
 
   const validateForm = () => {
     if (!username || !email || !password || !confirmPassword) {
@@ -65,12 +104,7 @@ export default function RegisterScreen() {
     if (validateForm()) {
       setErrorMessage("");
       try {
-        const response = await account.create(
-          "unique()",
-          email,
-          password,
-          username
-        );
+        const response = await account.create("unique()", email, password, username);
         console.log("Registration successful:", response);
         setUsername("");
         setEmail("");
@@ -78,41 +112,11 @@ export default function RegisterScreen() {
         setConfirmPassword("");
         router.push("/signin");
       } catch (error: any) {
-        setErrorMessage(
-          error.message || "An error occurred during registration."
-        );
+        setErrorMessage(error.message || "An error occurred during registration.");
+        Alert.alert("Error", error.message || "Registration failed.");
       }
     } else {
       Alert.alert("Error", errorMessage);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    if (!request) {
-      Alert.alert("Google Sign-In Error", "Google Sign-In is not initialized.");
-      return;
-    }
-
-    const result = await promptAsync();
-    if (result.type === "success") {
-      try {
-        const idToken = result.params.id_token;
-
-        account.createOAuth2Session(
-          "google" as OAuthProvider,
-          "myapp://auth",
-          "myapp://auth/fail"
-        );
-
-        router.push("/signin");
-      } catch (error: any) {
-        Alert.alert(
-          "Google Sign-In Error",
-          error.message || "Unable to authenticate."
-        );
-      }
-    } else if (result.type === "cancel") {
-      Alert.alert("Sign-In Canceled", "Google Sign-In was canceled.");
     }
   };
 
@@ -123,7 +127,7 @@ export default function RegisterScreen() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined} // Adjust for Android
     >
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <ScrollView contentContainerStyle={styles.container}>
@@ -163,13 +167,8 @@ export default function RegisterScreen() {
               onChangeText={setConfirmPassword}
               secureTextEntry
             />
-            {errorMessage ? (
-              <Text style={styles.errorText}>{errorMessage}</Text>
-            ) : null}
-            <TouchableOpacity
-              style={styles.signUpButton}
-              onPress={handleSubmit}
-            >
+            {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+            <TouchableOpacity style={styles.signUpButton} onPress={handleSubmit}>
               <Text style={styles.signUpText}>Sign Up</Text>
             </TouchableOpacity>
             <View style={styles.signUpWithContainer}>
@@ -180,15 +179,17 @@ export default function RegisterScreen() {
             <View style={styles.socialSignInContainer}>
               <TouchableOpacity
                 style={[styles.socialButton, { backgroundColor: "#DB4437" }]}
-                onPress={handleGoogleSignIn}
+                onPress={() => {
+                  console.log("Google OAuth button clicked");
+                  promptAsync();
+                }}
               >
                 <FontAwesome name="google" size={20} color="#FFF" />
               </TouchableOpacity>
             </View>
             <TouchableOpacity onPress={navigateToSignIn}>
               <Text style={styles.signInText}>
-                Already have an account?{" "}
-                <Text style={styles.signInLink}>Sign In</Text>
+                Already have an account? <Text style={styles.signInLink}>Sign In</Text>
               </Text>
             </TouchableOpacity>
           </View>

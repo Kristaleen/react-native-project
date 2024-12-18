@@ -15,7 +15,6 @@ import {
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
-import * as Google from "expo-auth-session/providers/google";
 import { account } from "../appwrite/appwriteConfig";
 
 const { width, height } = Dimensions.get("window");
@@ -25,12 +24,7 @@ export default function SignInScreen() {
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  // Google sign-in hook
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId:
-      "145158790263-dkj90d81ak639g6aqv19nk38v1b9831k.apps.googleusercontent.com",
-  });
-
+ 
   // Handle email/password sign-in
   const handleEmailSignIn = async () => {
     if (!email || !password) {
@@ -56,7 +50,7 @@ export default function SignInScreen() {
 
       // Navigate based on user role
       if (userDetails.labels?.includes("admin")) {
-        router.push("/admin/AdminPage");
+        router.push("/(tabs)/AdminPage");
       } else {
         router.push("/Home");
       }
@@ -68,57 +62,33 @@ export default function SignInScreen() {
     }
   };
 
-  // Handle Google Sign-In
-  const handleGoogleSignIn = async () => {
-    if (!response || response.type !== "success") {
-      Alert.alert("Error", "Google sign-in failed.");
-      return;
-    }
+  
+// Handle forgot password
+const handleForgotPassword = async () => {
+  if (!email) {
+    Alert.alert("Error", "Please enter your email to reset your password.");
+    return;
+  }
 
-    try {
-      const { id_token } = response.params;
+  const resetUrl = "http://localhost:8081/resetPassword"; 
+  try {
+    // Send the password recovery request to Appwrite
+    const recovery = await account.createRecovery(email, resetUrl);
 
-      const user = await account.createMagicURLToken("google", id_token);
-      console.log("Google sign-in successful:", user);
-
-      setEmail("");
-      setPassword("");
-      router.push("/(tabs)/Home");
-    } catch (error: any) {
-      console.error("Google sign-in error:", error);
-      Alert.alert("Error", error.message || "Failed to sign in with Google.");
-    }
-  };
-
-  // Handle Guest Sign-In
-  const handleGuestSignIn = async () => {
-    try {
-      // This assumes Appwrite allows anonymous sessions (check Appwrite documentation for anonymous login)
-      const session = await account.createAnonymousSession();
-
-      router.push("/Home");
-    } catch (error: any) {
-      console.error("Guest sign-in error:", error);
-      Alert.alert("Error", error.message || "Failed to sign in as guest.");
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    if (!email) {
-      Alert.alert("Error", "Please enter your email to reset your password.");
-      return;
-    }
-
-    try {
-      await account.createRecovery("email", email); // Assuming Appwrite provides this functionality
-      Alert.alert("Success", "Password reset link sent to your email.");
-    } catch (error: any) {
+    Alert.alert("Success", "Password reset link has been sent to your email.");
+  } catch (error: any) {
+    // Check if the error is due to the email not being found
+    if (error.code === 404) {
+      Alert.alert("Error", "This email address is not registered.");
+    } else {
       Alert.alert(
         "Error",
-        error.message || "Failed to send password reset link."
+        error.message || "Failed to send password reset link. Please try again."
       );
     }
-  };
+  }
+};
+  
 
   return (
     <KeyboardAvoidingView
@@ -161,7 +131,7 @@ export default function SignInScreen() {
               />
 
               <View style={styles.row}>
-                <Text style={styles.rememberMe}>Remember me</Text>
+               
                 <TouchableOpacity onPress={handleForgotPassword}>
                   <Text style={styles.forgotPassword}>Forgot password?</Text>
                 </TouchableOpacity>
@@ -174,19 +144,7 @@ export default function SignInScreen() {
                 <Text style={styles.signInText}>Sign in</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.socialSignInButton}
-                onPress={() => promptAsync()}
-              >
-                <Text style={styles.socialSignInText}>Sign Up with Google</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.guestSignInButton}
-                onPress={handleGuestSignIn}
-              >
-                <Text style={styles.guestSignInText}>Sign in as Guest</Text>
-              </TouchableOpacity>
+              
 
               <TouchableOpacity onPress={() => router.push("/register")}>
                 <Text style={styles.signUpText}>

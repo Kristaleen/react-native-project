@@ -42,7 +42,7 @@ export default function BottomBar() {
       <View style={styles.iconGroup}>
         
         <TouchableOpacity
-          onPress={() => router.push("/create")}
+          onPress={() => router.push("../(tabs)/bookmark")}
           style={styles.iconButton}
         >
           <Ionicons name="bookmark-outline" size={30} color="#093B39" />
